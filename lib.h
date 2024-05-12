@@ -50,3 +50,12 @@ private:
 public:
   Board(GameEngine *gameEngine);
 };
+
+class GameManager {
+private:
+  const int CS; // CELL_SIZE
+  Board board;
+
+public:
+  GameManager(GameEngine *gameEngine, const int CELL_SIZE);
+};

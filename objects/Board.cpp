@@ -9,9 +9,8 @@ Board::Board(GameEngine *gameEngine) {
     for (int j = 0; j < 8; j++) {
       RGBA color =
           (i + j) % 2 ? (RGBA){75, 75, 75, 255} : (RGBA){255, 255, 255, 255};
-      GameObject cell = GameObject({j * CS, i * CS}, {CS, CS}, color);
+      GameObject cell = GameObject({j * CS, i * CS}, {CS, CS}, color, false);
       cells[i].push_back(cell);
-      gameEngine->registerGameObjects({&cells[i][j]});
     }
   }
 

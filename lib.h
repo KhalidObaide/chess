@@ -1,8 +1,6 @@
+#include <SDL2/SDL.h>
 #include <string>
 #include <vector>
-
-struct SDL_Window;
-struct SDL_Renderer;
 
 // types
 typedef struct {
@@ -16,21 +14,27 @@ typedef struct {
 
 // engine-classes
 class GameObject {
+private:
+  SDL_Surface *image;
+
 public:
   Coordinate position;
   Coordinate size;
   RGBA fill;
-  GameObject(Coordinate nPosition, Coordinate nSize, RGBA nFill);
+  SDL_Texture *texture;
+  bool isUsingTexture;
+  GameObject(Coordinate nPosition, Coordinate nSize, RGBA nFill,
+             bool nIsUsingTexture);
+  void setTexture(std::string path, SDL_Renderer *renderer);
   void update();
 };
 
 class GameEngine {
-private:
-  struct Impl; // Forward declaration of implementation structure
-  Impl *imp;   // Pointer to implementation
+public:
+  SDL_Renderer *renderer;
+  SDL_Window *window;
   void runFrame();
 
-public:
   std::vector<GameObject *> gameObjects;
   GameEngine(std::string title, Coordinate windowSize);
   void registerGameObjects(std::vector<GameObject *> nGameObjects);

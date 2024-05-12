@@ -2,16 +2,11 @@
 #include <SDL2/SDL.h>
 #include <vector>
 
-struct GameEngine::Impl {
-  SDL_Window *window;
-  SDL_Renderer *renderer;
-};
-
 GameEngine::GameEngine(std::string title, Coordinate windowSize) {
-  imp->window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED,
-                                 SDL_WINDOWPOS_CENTERED, windowSize.x,
-                                 windowSize.y, SDL_WINDOW_SHOWN);
-  imp->renderer = SDL_CreateRenderer(imp->window, -1, SDL_RENDERER_ACCELERATED);
+  window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED,
+                            SDL_WINDOWPOS_CENTERED, windowSize.x, windowSize.y,
+                            SDL_WINDOW_SHOWN);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
 
 void GameEngine::registerGameObjects(std::vector<GameObject *> nGameObjects) {
@@ -21,17 +16,20 @@ void GameEngine::registerGameObjects(std::vector<GameObject *> nGameObjects) {
 }
 
 void GameEngine::runFrame() {
-  SDL_SetRenderDrawColor(imp->renderer, 255, 255, 255, 255);
-  SDL_RenderClear(imp->renderer);
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  SDL_RenderClear(renderer);
   for (GameObject *gameObject : gameObjects) {
-    SDL_SetRenderDrawColor(imp->renderer, gameObject->fill.r,
-                           gameObject->fill.g, gameObject->fill.b,
-                           gameObject->fill.a);
     SDL_Rect rpr = {gameObject->position.x, gameObject->position.y,
                     gameObject->size.x, gameObject->size.y};
-    SDL_RenderFillRect(imp->renderer, &rpr);
+    if (gameObject->isUsingTexture) {
+      SDL_RenderCopy(renderer, gameObject->texture, NULL, &rpr);
+    } else {
+      SDL_SetRenderDrawColor(renderer, gameObject->fill.r, gameObject->fill.g,
+                             gameObject->fill.b, gameObject->fill.a);
+      SDL_RenderFillRect(renderer, &rpr);
+    }
   }
-  SDL_RenderPresent(imp->renderer);
+  SDL_RenderPresent(renderer);
 }
 
 void GameEngine::gameLoop() {
@@ -50,7 +48,7 @@ void GameEngine::gameLoop() {
 }
 
 void GameEngine::end() {
-  SDL_DestroyRenderer(imp->renderer);
-  SDL_DestroyWindow(imp->window);
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
   SDL_Quit();
 }

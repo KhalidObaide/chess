@@ -14,7 +14,7 @@ typedef struct {
   int r, g, b, a;
 } RGBA;
 
-// classes
+// engine-classes
 class GameObject {
 public:
   Coordinate position;
@@ -36,4 +36,13 @@ public:
   void registerGameObjects(std::vector<GameObject *> nGameObjects);
   void gameLoop();
   void end();
+};
+
+// (game)Object classes
+class Board {
+private:
+  std::vector<std::vector<GameObject>> cells;
+
+public:
+  Board(GameEngine *gameEngine);
 };

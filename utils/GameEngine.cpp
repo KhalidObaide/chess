@@ -5,7 +5,6 @@
 struct GameEngine::Impl {
   SDL_Window *window;
   SDL_Renderer *renderer;
-  std::vector<GameObject> gameObjects;
 };
 
 GameEngine::GameEngine(std::string title, Coordinate windowSize) {
@@ -25,7 +24,6 @@ void GameEngine::runFrame() {
   SDL_SetRenderDrawColor(imp->renderer, 255, 255, 255, 255);
   SDL_RenderClear(imp->renderer);
   for (GameObject *gameObject : gameObjects) {
-    gameObject->update(); // run update script before rendering
     SDL_SetRenderDrawColor(imp->renderer, gameObject->fill.r,
                            gameObject->fill.g, gameObject->fill.b,
                            gameObject->fill.a);

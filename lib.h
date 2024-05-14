@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -83,6 +84,7 @@ public:
 
   std::vector<GameObject *> gameObjects;
   GameEngine(std::string title, Coordinate windowSize);
+  void resetInputEvents(std::unordered_map<InputEventType, int> &events);
   void registerGameObjects(std::vector<GameObject *> nGameObjects);
   void gameLoop();
   void end();
@@ -101,7 +103,7 @@ public:
 class GameManager;
 
 class Piece : public GameObject {
-private:
+public:
   const int CS; // cell-size
   const double SCALE;
 
@@ -110,20 +112,21 @@ private:
   Side gameTurn;
 
   GameManager &gameManager;
-
-public:
   bool isReadyToDrag;
   bool isDragging;
+  Spot spot;
 
   Piece(Side nSide, PieceType nType, std::string initialPosition, const int nCS,
         SDL_Renderer *renderer, GameManager &nGameManager);
   Spot convertToSpot(std::string spotString);
-  void move(Spot spot);
+  void move(Spot nSpot);
   void getNotified(Event event);
 
   void update(std::unordered_map<InputEventType, int> &events) override;
   void onMouseDown() override;
   void onMouseUp() override;
+
+  virtual std::vector<Spot> getValidMoves();
 };
 
 class GameManager : public GameObject {
@@ -131,14 +134,21 @@ private:
   GameEngine *gameEngine;
   Board board;
   const int CS; // CELL_SIZE
-  std::vector<Piece> pieces;
   Side gameTurn;
 
 public:
+  std::vector<std::unique_ptr<Piece>> pieces;
   GameManager(GameEngine *nGameEngine, const int CELL_SIZE);
   void setGameTurn(Side nSide);
   void setBoard(
       std::vector<std::tuple<Side, PieceType, std::string>> piecePlacements);
   void update(std::unordered_map<InputEventType, int> &events) override;
   void getNotified(Event event);
+};
+
+class Pawn : public Piece {
+public:
+  Pawn(Side nSide, std::string initialPosition, const int nCS,
+       SDL_Renderer *renderer, GameManager &nGameManager);
+  std::vector<Spot> getValidMoves() override;
 };

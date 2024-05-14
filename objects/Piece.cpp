@@ -43,10 +43,11 @@ Spot Piece::convertToSpot(std::string spotString) {
   return {filesOrder[file], ranksOrder[rank]};
 }
 
-void Piece::move(Spot spot) {
+void Piece::move(Spot nSpot) {
+  spot = nSpot;
+
   position.x = (spot.file * CS);
   position.y = (CS * 8) - ((spot.rank + 1) * CS);
-
   position.x += (CS - size.x) / 2;
   position.y += (CS - size.y) / 2;
 }
@@ -79,8 +80,19 @@ void Piece::onMouseUp() {
     int snappedY = 7 - round((position.y + (size.y / 2)) / CS);
     Spot newSpot = {(File)(snappedX), (Rank)(snappedY)};
     // find valid moves and revert to original spot if invalid move is chosen
-    move(newSpot);
-    gameManager.getNotified({MOVE_MADE, side});
+    bool isValidMove = false;
+    auto allValidMoves = getValidMoves();
+    for (auto &validMove : allValidMoves) {
+      if (newSpot.file == validMove.file && newSpot.rank == validMove.rank) {
+        isValidMove = true;
+        break;
+      }
+    }
+    if (isValidMove) {
+      move(newSpot);
+      gameManager.getNotified({MOVE_MADE, side});
+    } else
+      move(spot);
   }
 }
 
@@ -93,3 +105,5 @@ void Piece::getNotified(Event event) {
     break;
   }
 }
+
+std::vector<Spot> Piece::getValidMoves() { return {}; }

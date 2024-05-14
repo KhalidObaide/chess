@@ -1,4 +1,5 @@
 #include "../lib.h"
+#include <memory>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
@@ -15,7 +16,7 @@ std::unordered_map<std::string, BoardTheme> THEMES_SET = {
 
 GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
     : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), gameEngine(nGameEngine),
-      board(nGameEngine, CELL_SIZE, THEMES_SET["Sandcastle"]), CS(CELL_SIZE) {
+      board(nGameEngine, CELL_SIZE, THEMES_SET["Coral"]), CS(CELL_SIZE) {
 
   gameEngine->registerGameObjects({this});
   setBoard({
@@ -43,8 +44,8 @@ GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
 
 void GameManager::setGameTurn(Side nSide) {
   gameTurn = nSide;
-  for (Piece &piece : pieces) {
-    piece.getNotified({GAME_TURN, nSide});
+  for (auto &piece : pieces) {
+    piece->getNotified({GAME_TURN, nSide});
   }
 }
 
@@ -52,27 +53,37 @@ void GameManager::setBoard(
     std::vector<std::tuple<Side, PieceType, std::string>> piecePlacements) {
   int initIndex = pieces.size();
   for (const auto &piecePlacement : piecePlacements) {
-    Piece piece =
-        Piece(std::get<0>(piecePlacement), std::get<1>(piecePlacement),
-              std::get<2>(piecePlacement), CS, gameEngine->renderer, *this);
-    pieces.push_back(piece);
+    const Side pSide = std::get<0>(piecePlacement);
+    const PieceType pType = std::get<1>(piecePlacement);
+    const std::string pInitPosition = std::get<2>(piecePlacement);
+    switch (pType) {
+    case PAWN:
+      pieces.push_back(std::make_unique<Pawn>(
+          Pawn(pSide, pInitPosition, CS, gameEngine->renderer, *this)));
+      break;
+
+    default:
+      pieces.push_back(std::make_unique<Piece>(
+          Piece(pSide, pType, pInitPosition, CS, gameEngine->renderer, *this)));
+      break;
+    }
   }
   for (int i = initIndex; i < (int)pieces.size(); i++) {
-    gameEngine->registerGameObjects({&pieces[i]});
+    gameEngine->registerGameObjects({pieces[i].get()});
   }
 }
 
 void GameManager::update(std::unordered_map<InputEventType, int> & /*events*/) {
   bool isDragging = false;
-  for (Piece &piece : pieces) {
-    if (piece.isDragging) {
+  for (auto &piece : pieces) {
+    if (piece->isDragging) {
       isDragging = true;
       break;
     }
   }
 
-  for (Piece &piece : pieces) {
-    piece.isReadyToDrag = !isDragging;
+  for (auto &piece : pieces) {
+    piece->isReadyToDrag = !isDragging;
   }
 }
 

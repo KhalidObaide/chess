@@ -52,10 +52,18 @@ void GameEngine::runFrame() {
   SDL_RenderPresent(renderer);
 }
 
+void GameEngine::resetInputEvents(
+    std::unordered_map<InputEventType, int> &events) {
+  events[DOWN_MOUSE_PRIMARY] = 0;
+  events[UP_MOUSE_PRIMARY] = 0;
+}
+
 void GameEngine::gameLoop() {
   bool running = true;
   while (running) {
+
     // handle events
+    resetInputEvents(events);
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
@@ -68,10 +76,8 @@ void GameEngine::gameLoop() {
         break;
       case SDL_MOUSEBUTTONDOWN:
         events[DOWN_MOUSE_PRIMARY] = 1;
-        events[UP_MOUSE_PRIMARY] = 0;
         break;
       case SDL_MOUSEBUTTONUP:
-        events[DOWN_MOUSE_PRIMARY] = 0;
         events[UP_MOUSE_PRIMARY] = 1;
         break;
       }

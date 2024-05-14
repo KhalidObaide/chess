@@ -15,7 +15,8 @@ void GameObject::setTexture(std::string path, SDL_Renderer *renderer) {
   texture = SDL_CreateTextureFromSurface(renderer, image);
 }
 
-void GameObject::update(std::unordered_map<EventType, int> & /*events*/) {};
+void GameObject::update(std::unordered_map<InputEventType, int> & /*events*/) {
+};
 void GameObject::onMouseDown() {}
 void GameObject::onMouseUp() {}
 GameObject::~GameObject(){};

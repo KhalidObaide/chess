@@ -37,6 +37,15 @@ GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
       {BLACK_SIDE, BISHOP, "c8"}, {BLACK_SIDE, BISHOP, "f8"},
       {BLACK_SIDE, QUEEN, "d8"},  {BLACK_SIDE, KING, "e8"},
   });
+
+  setGameTurn(WHITE_SIDE);
+}
+
+void GameManager::setGameTurn(Side nSide) {
+  gameTurn = nSide;
+  for (Piece &piece : pieces) {
+    piece.getNotified({GAME_TURN, nSide});
+  }
 }
 
 void GameManager::setBoard(
@@ -45,7 +54,7 @@ void GameManager::setBoard(
   for (const auto &piecePlacement : piecePlacements) {
     Piece piece =
         Piece(std::get<0>(piecePlacement), std::get<1>(piecePlacement),
-              std::get<2>(piecePlacement), CS, gameEngine->renderer);
+              std::get<2>(piecePlacement), CS, gameEngine->renderer, *this);
     pieces.push_back(piece);
   }
   for (int i = initIndex; i < (int)pieces.size(); i++) {
@@ -53,7 +62,7 @@ void GameManager::setBoard(
   }
 }
 
-void GameManager::update(std::unordered_map<EventType, int> & /*events*/) {
+void GameManager::update(std::unordered_map<InputEventType, int> & /*events*/) {
   bool isDragging = false;
   for (Piece &piece : pieces) {
     if (piece.isDragging) {
@@ -64,5 +73,15 @@ void GameManager::update(std::unordered_map<EventType, int> & /*events*/) {
 
   for (Piece &piece : pieces) {
     piece.isReadyToDrag = !isDragging;
+  }
+}
+
+void GameManager::getNotified(Event event) {
+  switch (event.type) {
+  case MOVE_MADE:
+    setGameTurn((Side)event.value == WHITE_SIDE ? BLACK_SIDE : WHITE_SIDE);
+    break;
+  default:
+    break;
   }
 }

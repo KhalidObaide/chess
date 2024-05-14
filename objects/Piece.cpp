@@ -6,8 +6,9 @@
 #include <unordered_map>
 
 Piece::Piece(Side nSide, PieceType nType, std::string initialPosition,
-             const int nCS, SDL_Renderer *renderer)
-    : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, true), CS(nCS), SCALE(0.8) {
+             const int nCS, SDL_Renderer *renderer, GameManager &nGameManager)
+    : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, true), CS(nCS), SCALE(0.8),
+      gameManager(nGameManager) {
   size.x = CS * SCALE;
   size.y = CS * SCALE;
 
@@ -50,7 +51,7 @@ void Piece::move(Spot spot) {
   position.y += (CS - size.y) / 2;
 }
 
-void Piece::update(std::unordered_map<EventType, int> &events) {
+void Piece::update(std::unordered_map<InputEventType, int> &events) {
   if (isDragging) {
     position.x = events[MOVE_MOUSE_X] - (size.x / 2);
     position.y = events[MOVE_MOUSE_Y] - (size.y / 2);
@@ -58,7 +59,7 @@ void Piece::update(std::unordered_map<EventType, int> &events) {
 }
 
 void Piece::onMouseDown() {
-  if (isReadyToDrag && !isDragging) {
+  if (isReadyToDrag && !isDragging && gameTurn == side) {
     isDragging = true;
     zIndex = 10; // dragging piece always on top
 
@@ -74,10 +75,21 @@ void Piece::onMouseUp() {
     SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
 
     // Snap to grid
-    int snappedX = round(position.x / CS);
-    int snappedY = 7 - round(position.y / CS);
+    int snappedX = round((position.x + (size.x / 2)) / CS);
+    int snappedY = 7 - round((position.y + (size.y / 2)) / CS);
     Spot newSpot = {(File)(snappedX), (Rank)(snappedY)};
     // find valid moves and revert to original spot if invalid move is chosen
     move(newSpot);
+    gameManager.getNotified({MOVE_MADE, side});
+  }
+}
+
+void Piece::getNotified(Event event) {
+  switch (event.type) {
+  case GAME_TURN:
+    gameTurn = (Side)event.value;
+    break;
+  default:
+    break;
   }
 }

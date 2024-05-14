@@ -74,9 +74,10 @@ void Piece::onMouseUp() {
     SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
 
     // Snap to grid
-    int snappedX = round((position.x + (size.x / 2)) / CS) * CS;
-    int snappedY = round((position.y + (size.y / 2)) / CS) * CS;
-    position.x = snappedX + ((CS - size.x) / 2);
-    position.y = snappedY + ((CS - size.y) / 2);
+    int snappedX = round(position.x / CS);
+    int snappedY = 7 - round(position.y / CS);
+    Spot newSpot = {(File)(snappedX), (Rank)(snappedY)};
+    // find valid moves and revert to original spot if invalid move is chosen
+    move(newSpot);
   }
 }

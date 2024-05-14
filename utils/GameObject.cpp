@@ -7,6 +7,7 @@ GameObject::GameObject(Coordinate nPosition, Coordinate nSize, RGBA nFill,
   size = nSize;
   fill = nFill;
   isUsingTexture = nIsUsingTexture;
+  zIndex = 0;
 }
 
 void GameObject::setTexture(std::string path, SDL_Renderer *renderer) {
@@ -14,4 +15,7 @@ void GameObject::setTexture(std::string path, SDL_Renderer *renderer) {
   texture = SDL_CreateTextureFromSurface(renderer, image);
 }
 
-void GameObject::update() {}
+void GameObject::update(std::unordered_map<EventType, int> & /*events*/) {};
+void GameObject::onMouseDown() {}
+void GameObject::onMouseUp() {}
+GameObject::~GameObject(){};

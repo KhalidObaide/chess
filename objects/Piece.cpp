@@ -89,6 +89,8 @@ void Piece::onMouseUp() {
       }
     }
     if (isValidMove) {
+      // handle capture
+      gameManager.runCapture(newSpot);
       move(newSpot);
       gameManager.getNotified({MOVE_MADE, side});
     } else

@@ -21,6 +21,20 @@ void GameEngine::registerGameObjects(std::vector<GameObject *> nGameObjects) {
   }
 }
 
+void GameEngine::deRegisterGameObject(GameObject *gameObjectToRemove) {
+  int index = 0;
+  for (auto &gameObject : gameObjects) {
+    if (gameObject == gameObjectToRemove) {
+      break;
+    }
+    index++;
+  }
+  if (index == (int)gameObjects.size())
+    return;
+
+  gameObjects.erase(gameObjects.begin() + index);
+}
+
 void GameEngine::runFrame() {
   // Set background color
   SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -40,6 +54,7 @@ void GameEngine::runFrame() {
     SDL_Rect rpr = {gameObject->position.x, gameObject->position.y,
                     gameObject->size.x, gameObject->size.y};
     if (gameObject->isUsingTexture) {
+
       SDL_RenderCopy(renderer, gameObject->texture, NULL, &rpr);
     } else {
       SDL_SetRenderDrawColor(renderer, gameObject->fill.r, gameObject->fill.g,

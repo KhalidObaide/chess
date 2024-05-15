@@ -38,5 +38,37 @@ std::vector<Spot> Pawn::getValidMoves() {
     }
   }
 
+  // top-right
+  int rightSquare = (spot.file + (side == WHITE_SIDE ? 1 : -1));
+  bool isTopRightValid = false;
+  if (((side == WHITE_SIDE) ? (topSquare <= 7) : (topSquare >= 0)) &&
+      ((side == WHITE_SIDE) ? (rightSquare <= 7) : (rightSquare >= 0))) {
+    for (auto &piece : gameManager.pieces) {
+      if (piece->side != side && piece->spot.rank == topSquare &&
+          piece->spot.file == rightSquare) {
+        isTopRightValid = true;
+      }
+    }
+    if (isTopRightValid) {
+      validMoves.push_back({File(rightSquare), (Rank)topSquare});
+    }
+  }
+
+  // top-left
+  int leftSquare = (spot.file + (side == WHITE_SIDE ? -1 : 1));
+  bool isTopLeftValid = false;
+  if (((side == WHITE_SIDE) ? (topSquare <= 7) : (topSquare >= 0)) &&
+      ((side == WHITE_SIDE) ? (leftSquare >= 0) : (leftSquare <= 7))) {
+    for (auto &piece : gameManager.pieces) {
+      if (piece->side != side && piece->spot.rank == topSquare &&
+          piece->spot.file == leftSquare) {
+        isTopLeftValid = true;
+      }
+    }
+    if (isTopLeftValid) {
+      validMoves.push_back({File(leftSquare), (Rank)topSquare});
+    }
+  }
+
   return validMoves;
 }

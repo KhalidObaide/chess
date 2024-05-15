@@ -86,6 +86,7 @@ public:
   GameEngine(std::string title, Coordinate windowSize);
   void resetInputEvents(std::unordered_map<InputEventType, int> &events);
   void registerGameObjects(std::vector<GameObject *> nGameObjects);
+  void deRegisterGameObject(GameObject *gameObjectToRemove);
   void gameLoop();
   void end();
 };
@@ -142,6 +143,7 @@ public:
   void setGameTurn(Side nSide);
   void setBoard(
       std::vector<std::tuple<Side, PieceType, std::string>> piecePlacements);
+  void runCapture(Spot nSpot);
   void update(std::unordered_map<InputEventType, int> &events) override;
   void getNotified(Event event);
 };
@@ -150,5 +152,12 @@ class Pawn : public Piece {
 public:
   Pawn(Side nSide, std::string initialPosition, const int nCS,
        SDL_Renderer *renderer, GameManager &nGameManager);
+  std::vector<Spot> getValidMoves() override;
+};
+
+class Knight : public Piece {
+public:
+  Knight(Side nSide, std::string initialPosition, const int nCS,
+         SDL_Renderer *renderer, GameManager &nGameManager);
   std::vector<Spot> getValidMoves() override;
 };

@@ -161,3 +161,10 @@ public:
          SDL_Renderer *renderer, GameManager &nGameManager);
   std::vector<Spot> getValidMoves() override;
 };
+
+class King : public Piece {
+public:
+  King(Side nSide, std::string initialPosition, const int nCS,
+       SDL_Renderer *renderer, GameManager &nGameManager);
+  std::vector<Spot> getValidMoves() override;
+};

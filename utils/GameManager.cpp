@@ -16,7 +16,7 @@ std::unordered_map<std::string, BoardTheme> THEMES_SET = {
 
 GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
     : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), gameEngine(nGameEngine),
-      board(nGameEngine, CELL_SIZE, THEMES_SET["Emerald"]), CS(CELL_SIZE) {
+      board(nGameEngine, CELL_SIZE, THEMES_SET["Sandcastle"]), CS(CELL_SIZE) {
 
   gameEngine->registerGameObjects({this});
   setBoard({
@@ -64,6 +64,10 @@ void GameManager::setBoard(
     case KNIGHT:
       pieces.push_back(std::make_unique<Knight>(
           Knight(pSide, pInitPosition, CS, gameEngine->renderer, *this)));
+      break;
+    case KING:
+      pieces.push_back(std::make_unique<King>(
+          King(pSide, pInitPosition, CS, gameEngine->renderer, *this)));
       break;
     default:
       pieces.push_back(std::make_unique<Piece>(

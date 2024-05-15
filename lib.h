@@ -168,3 +168,24 @@ public:
        SDL_Renderer *renderer, GameManager &nGameManager);
   std::vector<Spot> getValidMoves() override;
 };
+
+class Rook : public Piece {
+public:
+  Rook(Side nSide, std::string initialPosition, const int nCS,
+       SDL_Renderer *renderer, GameManager &nGameManager);
+  std::vector<Spot> getValidMoves() override;
+};
+
+class Bishop : public Piece {
+public:
+  Bishop(Side nSide, std::string initialPosition, const int nCS,
+         SDL_Renderer *renderer, GameManager &nGameManager);
+  std::vector<Spot> getValidMoves() override;
+};
+
+class Queen : public Piece {
+public:
+  Queen(Side nSide, std::string initialPosition, const int nCS,
+        SDL_Renderer *renderer, GameManager &nGameManager);
+  std::vector<Spot> getValidMoves() override;
+};

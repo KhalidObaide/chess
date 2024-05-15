@@ -69,9 +69,17 @@ void GameManager::setBoard(
       pieces.push_back(std::make_unique<King>(
           King(pSide, pInitPosition, CS, gameEngine->renderer, *this)));
       break;
-    default:
-      pieces.push_back(std::make_unique<Piece>(
-          Piece(pSide, pType, pInitPosition, CS, gameEngine->renderer, *this)));
+    case ROOK:
+      pieces.push_back(std::make_unique<Rook>(
+          Rook(pSide, pInitPosition, CS, gameEngine->renderer, *this)));
+      break;
+    case BISHOP:
+      pieces.push_back(std::make_unique<Bishop>(
+          Bishop(pSide, pInitPosition, CS, gameEngine->renderer, *this)));
+      break;
+    case QUEEN:
+      pieces.push_back(std::make_unique<Queen>(
+          Queen(pSide, pInitPosition, CS, gameEngine->renderer, *this)));
       break;
     }
   }

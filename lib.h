@@ -51,6 +51,15 @@ typedef struct {
   int value;
 } Event;
 
+typedef struct {
+  Spot start;
+  Spot end;
+} HistoryRecord;
+
+typedef struct {
+  std::vector<HistoryRecord> records;
+} History;
+
 // engine-classes
 class GameObject {
 private:
@@ -127,7 +136,7 @@ public:
   void onMouseDown() override;
   void onMouseUp() override;
 
-  virtual std::vector<Spot> getValidMoves();
+  virtual std::vector<Spot> getValidMoves(bool checkForCapture = false);
 };
 
 class GameManager : public GameObject {
@@ -136,6 +145,7 @@ private:
   Board board;
   const int CS; // CELL_SIZE
   Side gameTurn;
+  History history;
 
 public:
   std::vector<std::unique_ptr<Piece>> pieces;
@@ -143,49 +153,53 @@ public:
   void setGameTurn(Side nSide);
   void setBoard(
       std::vector<std::tuple<Side, PieceType, std::string>> piecePlacements);
+  std::vector<Spot> getValidCastleMoves(Side side);
+  bool isSpotInCheck(Spot spot, Side side, bool includeKingChecks);
+  void runCastleMove(Spot nSpot);
   void runCapture(Spot nSpot);
   void update(std::unordered_map<InputEventType, int> &events) override;
   void getNotified(Event event);
+  void addToHistory(Spot start, Spot end);
 };
 
 class Pawn : public Piece {
 public:
   Pawn(Side nSide, std::string initialPosition, const int nCS,
        SDL_Renderer *renderer, GameManager &nGameManager);
-  std::vector<Spot> getValidMoves() override;
+  std::vector<Spot> getValidMoves(bool checkForCapture = false) override;
 };
 
 class Knight : public Piece {
 public:
   Knight(Side nSide, std::string initialPosition, const int nCS,
          SDL_Renderer *renderer, GameManager &nGameManager);
-  std::vector<Spot> getValidMoves() override;
+  std::vector<Spot> getValidMoves(bool checkForCapture = false) override;
 };
 
 class King : public Piece {
 public:
   King(Side nSide, std::string initialPosition, const int nCS,
        SDL_Renderer *renderer, GameManager &nGameManager);
-  std::vector<Spot> getValidMoves() override;
+  std::vector<Spot> getValidMoves(bool checkForCapture = false) override;
 };
 
 class Rook : public Piece {
 public:
   Rook(Side nSide, std::string initialPosition, const int nCS,
        SDL_Renderer *renderer, GameManager &nGameManager);
-  std::vector<Spot> getValidMoves() override;
+  std::vector<Spot> getValidMoves(bool checkForCapture = false) override;
 };
 
 class Bishop : public Piece {
 public:
   Bishop(Side nSide, std::string initialPosition, const int nCS,
          SDL_Renderer *renderer, GameManager &nGameManager);
-  std::vector<Spot> getValidMoves() override;
+  std::vector<Spot> getValidMoves(bool checkForCapture = false) override;
 };
 
 class Queen : public Piece {
 public:
   Queen(Side nSide, std::string initialPosition, const int nCS,
         SDL_Renderer *renderer, GameManager &nGameManager);
-  std::vector<Spot> getValidMoves() override;
+  std::vector<Spot> getValidMoves(bool checkForCapture = false) override;
 };

@@ -5,7 +5,7 @@ Pawn::Pawn(Side nSide, std::string initialPosition, const int nCS,
            SDL_Renderer *renderer, GameManager &nGameManager)
     : Piece(nSide, PAWN, initialPosition, nCS, renderer, nGameManager) {}
 
-std::vector<Spot> Pawn::getValidMoves() {
+std::vector<Spot> Pawn::getValidMoves(bool /*checkForCapture*/) {
   std::vector<Spot> validMoves;
 
   // forward-one

@@ -7,7 +7,7 @@ Queen::Queen(Side nSide, std::string initialPosition, const int nCS,
              SDL_Renderer *renderer, GameManager &nGameManager)
     : Piece(nSide, QUEEN, initialPosition, nCS, renderer, nGameManager) {}
 
-std::vector<Spot> Queen::getValidMoves() {
+std::vector<Spot> Queen::getValidMoves(bool /*checkForCapture*/) {
   std::unordered_map<std::string, Side> allPieces;
   for (auto &piece : gameManager.pieces) {
     allPieces[std::to_string(piece->spot.file) +

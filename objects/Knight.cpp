@@ -7,7 +7,7 @@ Knight::Knight(Side nSide, std::string initialPosition, const int nCS,
                SDL_Renderer *renderer, GameManager &nGameManager)
     : Piece(nSide, KNIGHT, initialPosition, nCS, renderer, nGameManager) {}
 
-std::vector<Spot> Knight::getValidMoves() {
+std::vector<Spot> Knight::getValidMoves(bool /*checkForCapture*/) {
   std::vector<std::pair<int, int>> allSquares = {
       {1, 2}, {1, -2}, {-1, 2}, {-1, -2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
   };

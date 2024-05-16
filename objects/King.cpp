@@ -7,7 +7,7 @@ King::King(Side nSide, std::string initialPosition, const int nCS,
            SDL_Renderer *renderer, GameManager &nGameManager)
     : Piece(nSide, KING, initialPosition, nCS, renderer, nGameManager) {}
 
-std::vector<Spot> King::getValidMoves() {
+std::vector<Spot> King::getValidMoves(bool checkForCapture) {
   std::vector<std::pair<int, int>> allSquares = {
       {0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
   };
@@ -34,6 +34,13 @@ std::vector<Spot> King::getValidMoves() {
     if (toSkip.find(spotString) == toSkip.end()) {
       validMoves.push_back(
           {(File)(spotString[0] - '0'), (Rank)(spotString[1] - '0')});
+    }
+  }
+
+  // Castle
+  if (!checkForCapture) {
+    for (Spot availableCastle : gameManager.getValidCastleMoves(side)) {
+      validMoves.push_back(availableCastle);
     }
   }
 

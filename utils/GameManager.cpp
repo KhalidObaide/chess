@@ -16,7 +16,7 @@ std::unordered_map<std::string, BoardTheme> THEMES_SET = {
 
 GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
     : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), gameEngine(nGameEngine),
-      board(nGameEngine, CELL_SIZE, THEMES_SET["Sandcastle"]), CS(CELL_SIZE) {
+      board(nGameEngine, CELL_SIZE, THEMES_SET["Wheat"]), CS(CELL_SIZE) {
 
   gameEngine->registerGameObjects({this});
   setBoard({
@@ -127,4 +127,108 @@ void GameManager::runCapture(Spot nSpot) {
 
   pieces.erase(pieces.begin() + index);
   gameEngine->deRegisterGameObject(capturedPiece);
+}
+
+bool GameManager::isSpotInCheck(Spot spot, Side side, bool includeKingChecks) {
+  for (auto &piece : pieces) {
+    if (piece->side == side ||
+        (includeKingChecks ? false : piece->type == KING))
+      continue;
+    std::vector<Spot> pieceValidMoves = piece->getValidMoves(true);
+
+    for (auto &validMove : pieceValidMoves) {
+      if (validMove.file == spot.file && validMove.rank == spot.rank) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+std::vector<Spot> GameManager::getValidCastleMoves(Side side) {
+  // convert to hashmap for quicker access when running validations
+  std::unordered_map<std::string, Side> allPieces;
+  for (auto &piece : pieces) {
+    allPieces[std::to_string(piece->spot.file) +
+              std::to_string(piece->spot.rank)] = piece->side;
+  }
+  const Rank startingRank = side == WHITE_SIDE ? RANK_1 : RANK_8;
+  bool isRightCastleValid = !isSpotInCheck({FILE_F, startingRank}, side, true);
+  bool isLeftCastleValid = !isSpotInCheck({FILE_D, startingRank}, side, true);
+
+  // validate the history
+  for (auto &record : history.records) {
+    if (record.start.rank == startingRank && record.start.file == FILE_E) {
+      isRightCastleValid = false;
+      isLeftCastleValid = false;
+      break;
+    } else if (record.start.rank == startingRank &&
+               record.start.file == FILE_H) {
+      isRightCastleValid = false;
+    } else if (record.start.rank == startingRank &&
+               record.start.file == FILE_A) {
+      isLeftCastleValid = false;
+    }
+  }
+
+  // validate if in check
+  if (isSpotInCheck({FILE_E, startingRank}, side, false)) {
+    return {};
+  }
+
+  // right & left castle ( validate if no piece in the middle )
+  std::vector<Spot> validCastleMoves;
+  if (isRightCastleValid) {
+    std::vector<File> rightMiddleFiles = {FILE_F, FILE_G};
+    for (auto &file : rightMiddleFiles) {
+      std::string spotString =
+          std::to_string(file) + std::to_string(startingRank);
+      if (allPieces.find(spotString) != allPieces.end()) {
+        isRightCastleValid = false;
+        break;
+      }
+    }
+    if (isRightCastleValid) {
+      validCastleMoves.push_back({FILE_G, startingRank});
+    }
+  }
+  if (isLeftCastleValid) {
+    std::vector<File> leftMiddleFiles = {FILE_B, FILE_C, FILE_D};
+    for (auto &file : leftMiddleFiles) {
+      std::string spotString =
+          std::to_string(file) + std::to_string(startingRank);
+      if (allPieces.find(spotString) != allPieces.end()) {
+        isLeftCastleValid = false;
+        break;
+      }
+    }
+    if (isLeftCastleValid) {
+      validCastleMoves.push_back({FILE_C, startingRank});
+    }
+  }
+
+  return validCastleMoves;
+}
+
+void GameManager::runCastleMove(Spot nSpot) {
+  for (auto &piece : pieces) {
+    // right
+    if (nSpot.file == FILE_G) {
+      if (piece->spot.file == FILE_H && piece->spot.rank == nSpot.rank) {
+        piece->move({FILE_F, piece->spot.rank});
+        break;
+      }
+    } else if (nSpot.file == FILE_C) {
+      // left
+      if (piece->spot.file == FILE_A && piece->spot.rank == nSpot.rank) {
+        piece->move({FILE_D, piece->spot.rank});
+        break;
+      }
+    }
+  }
+}
+
+void GameManager::addToHistory(Spot start, Spot end) {
+  history.records.push_back({start, end});
 }

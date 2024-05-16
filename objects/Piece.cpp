@@ -1,5 +1,6 @@
 #include "../lib.h"
 #include <SDL2/SDL.h>
+#include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -90,11 +91,17 @@ void Piece::onMouseUp() {
     }
     if (isValidMove) {
       // handle capture
+      // check if it was a castle move ( edge-case )
+      if (type == KING && abs(newSpot.file - spot.file) == 2) {
+        gameManager.runCastleMove(newSpot);
+      }
       gameManager.runCapture(newSpot);
+      gameManager.addToHistory(spot, newSpot);
       move(newSpot);
       gameManager.getNotified({MOVE_MADE, side});
-    } else
-      move(spot);
+    } else {
+      move(spot); // reset
+    }
   }
 }
 
@@ -108,4 +115,4 @@ void Piece::getNotified(Event event) {
   }
 }
 
-std::vector<Spot> Piece::getValidMoves() { return {}; }
+std::vector<Spot> Piece::getValidMoves(bool /*checkForCapture*/) { return {}; }

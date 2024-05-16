@@ -7,7 +7,7 @@ Bishop::Bishop(Side nSide, std::string initialPosition, const int nCS,
                SDL_Renderer *renderer, GameManager &nGameManager)
     : Piece(nSide, BISHOP, initialPosition, nCS, renderer, nGameManager) {}
 
-std::vector<Spot> Bishop::getValidMoves() {
+std::vector<Spot> Bishop::getValidMoves(bool /*checkForCapture*/) {
   std::unordered_map<std::string, Side> allPieces;
   for (auto &piece : gameManager.pieces) {
     allPieces[std::to_string(piece->spot.file) +

@@ -145,9 +145,9 @@ private:
   Board board;
   const int CS; // CELL_SIZE
   Side gameTurn;
-  History history;
 
 public:
+  History history;
   std::vector<std::unique_ptr<Piece>> pieces;
   GameManager(GameEngine *nGameEngine, const int CELL_SIZE);
   void setGameTurn(Side nSide);

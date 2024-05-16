@@ -16,7 +16,7 @@ std::unordered_map<std::string, BoardTheme> THEMES_SET = {
 
 GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
     : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), gameEngine(nGameEngine),
-      board(nGameEngine, CELL_SIZE, THEMES_SET["Wheat"]), CS(CELL_SIZE) {
+      board(nGameEngine, CELL_SIZE, THEMES_SET["Coral"]), CS(CELL_SIZE) {
 
   gameEngine->registerGameObjects({this});
   setBoard({
@@ -163,11 +163,13 @@ std::vector<Spot> GameManager::getValidCastleMoves(Side side) {
       isRightCastleValid = false;
       isLeftCastleValid = false;
       break;
-    } else if (record.start.rank == startingRank &&
-               record.start.file == FILE_H) {
+    } else if ((record.start.rank == startingRank &&
+                record.start.file == FILE_H) ||
+               (record.end.rank == startingRank && record.end.file == FILE_H)) {
       isRightCastleValid = false;
-    } else if (record.start.rank == startingRank &&
-               record.start.file == FILE_A) {
+    } else if ((record.start.rank == startingRank &&
+                record.start.file == FILE_A) ||
+               (record.end.rank == startingRank && record.end.file == FILE_H)) {
       isLeftCastleValid = false;
     }
   }

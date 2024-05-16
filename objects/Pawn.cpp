@@ -70,5 +70,31 @@ std::vector<Spot> Pawn::getValidMoves(bool /*checkForCapture*/) {
     }
   }
 
+  // en passant
+  Rank expectedRank = side == WHITE_SIDE ? RANK_5 : RANK_4;
+  if (spot.rank == expectedRank) {
+    HistoryRecord lastMove =
+        gameManager.history.records[gameManager.history.records.size() - 1];
+
+    // right
+    if (lastMove.start.rank ==
+            (Rank)(spot.rank + (side == WHITE_SIDE ? 2 : -2)) &&
+        lastMove.start.file == spot.file + 1 &&
+        lastMove.end.rank == expectedRank &&
+        lastMove.end.file == (File)(spot.file + 1)) {
+      validMoves.push_back({(File)(spot.file + 1),
+                            (Rank)(spot.rank + (side == WHITE_SIDE ? 1 : -1))});
+    }
+    // left
+    else if (lastMove.start.rank ==
+                 (Rank)(spot.rank + (side == WHITE_SIDE ? 2 : -2)) &&
+             lastMove.start.file == spot.file - 1 &&
+             lastMove.end.rank == expectedRank &&
+             lastMove.end.file == (File)(spot.file - 1)) {
+      validMoves.push_back({(File)(spot.file - 1),
+                            (Rank)(spot.rank + (side == WHITE_SIDE ? 1 : -1))});
+    }
+  }
+
   return validMoves;
 }

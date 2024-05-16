@@ -95,6 +95,21 @@ void Piece::onMouseUp() {
       if (type == KING && abs(newSpot.file - spot.file) == 2) {
         gameManager.runCastleMove(newSpot);
       }
+      // en-passant ( edge-case )
+      else if (type == PAWN &&
+               newSpot.rank == (side == WHITE_SIDE ? RANK_6 : RANK_3) &&
+               spot.file != newSpot.file) {
+        // we moved in diagnal in the RANK_6 and RANK_3 ( potential en passant)
+        HistoryRecord lastMove =
+            gameManager.history.records[gameManager.history.records.size() - 1];
+        if (lastMove.end.rank == newSpot.rank + (side == WHITE_SIDE ? -1 : 1) &&
+            lastMove.end.file == newSpot.file) {
+          gameManager.runCapture(
+              {newSpot.file,
+               (Rank)(newSpot.rank + (side == WHITE_SIDE ? -1 : 1))});
+        }
+      }
+
       gameManager.runCapture(newSpot);
       gameManager.addToHistory(spot, newSpot);
       move(newSpot);

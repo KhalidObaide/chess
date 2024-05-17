@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+class Piece;
+
 // types
 enum File { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H };
 enum Rank { RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8 };
@@ -52,13 +54,22 @@ typedef struct {
 } Event;
 
 typedef struct {
+  Piece *piece;
   Spot start;
   Spot end;
 } HistoryRecord;
 
 typedef struct {
+  std::unique_ptr<Piece> piece;
+} CaptureRecord;
+
+typedef struct {
   std::vector<HistoryRecord> records;
+  std::unordered_map<int, std::unique_ptr<Piece>> capturedPieces;
+  std::unordered_map<int, int> capturedPiecesIndexes;
 } History;
+
+enum GameStatus { DRAW, CHECKMATE, RUNNING };
 
 // engine-classes
 class GameObject {
@@ -144,9 +155,9 @@ private:
   GameEngine *gameEngine;
   Board board;
   const int CS; // CELL_SIZE
-  Side gameTurn;
 
 public:
+  Side gameTurn;
   History history;
   std::vector<std::unique_ptr<Piece>> pieces;
   GameManager(GameEngine *nGameEngine, const int CELL_SIZE);
@@ -159,7 +170,10 @@ public:
   void runCapture(Spot nSpot);
   void update(std::unordered_map<InputEventType, int> &events) override;
   void getNotified(Event event);
-  void addToHistory(Spot start, Spot end);
+  void addToHistory(Piece *piece, Spot end);
+  bool makeMove(Piece *piece, Spot newSpot, bool switchTurn = true);
+  void rollbackMove();
+  GameStatus getGameStatus(Side side);
 };
 
 class Pawn : public Piece {

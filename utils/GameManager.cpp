@@ -1,4 +1,5 @@
 #include "../lib.h"
+#include <iostream>
 #include <memory>
 #include <tuple>
 #include <unordered_map>
@@ -16,9 +17,10 @@ std::unordered_map<std::string, BoardTheme> THEMES_SET = {
 
 GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
     : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), gameEngine(nGameEngine),
-      board(nGameEngine, CELL_SIZE, THEMES_SET["Coral"]), CS(CELL_SIZE) {
+      board(nGameEngine, CELL_SIZE, THEMES_SET["Sandcastle"]), CS(CELL_SIZE) {
 
   gameEngine->registerGameObjects({this});
+
   setBoard({
       {WHITE_SIDE, PAWN, "a2"},   {WHITE_SIDE, PAWN, "b2"},
       {WHITE_SIDE, PAWN, "c2"},   {WHITE_SIDE, PAWN, "d2"},
@@ -104,9 +106,18 @@ void GameManager::update(std::unordered_map<InputEventType, int> & /*events*/) {
 
 void GameManager::getNotified(Event event) {
   switch (event.type) {
-  case MOVE_MADE:
+  case MOVE_MADE: {
     setGameTurn((Side)event.value == WHITE_SIDE ? BLACK_SIDE : WHITE_SIDE);
+    // validate check-mate
+    GameStatus status = getGameStatus(gameTurn);
+    if (status == CHECKMATE) {
+      std::cout << "CHECKMATE " << (gameTurn == WHITE_SIDE ? "WHITE" : "BLACK")
+                << std::endl;
+    } else if (status == DRAW) {
+      std::cout << "DRAW" << std::endl;
+    }
     break;
+  }
   default:
     break;
   }
@@ -125,18 +136,18 @@ void GameManager::runCapture(Spot nSpot) {
   if (index == (int)pieces.size())
     return;
 
+  history.capturedPieces[history.records.size()] = std::move(pieces[index]);
+  history.capturedPiecesIndexes[history.records.size()] = index;
   pieces.erase(pieces.begin() + index);
   gameEngine->deRegisterGameObject(capturedPiece);
 }
 
 bool GameManager::isSpotInCheck(Spot spot, Side side, bool includeKingChecks) {
   for (auto &piece : pieces) {
-    if (piece->side == side ||
-        (includeKingChecks ? false : piece->type == KING))
+    if (piece->side == side || (!includeKingChecks && piece->type == KING))
       continue;
-    std::vector<Spot> pieceValidMoves = piece->getValidMoves(true);
 
-    for (auto &validMove : pieceValidMoves) {
+    for (auto &validMove : piece->getValidMoves(true)) {
       if (validMove.file == spot.file && validMove.rank == spot.rank) {
         return true;
       }
@@ -147,15 +158,23 @@ bool GameManager::isSpotInCheck(Spot spot, Side side, bool includeKingChecks) {
 }
 
 std::vector<Spot> GameManager::getValidCastleMoves(Side side) {
+  const Rank startingRank = side == WHITE_SIDE ? RANK_1 : RANK_8;
+  // validate if in check
+  if (isSpotInCheck({FILE_E, startingRank}, side, false)) {
+    return {};
+  }
+
   // convert to hashmap for quicker access when running validations
   std::unordered_map<std::string, Side> allPieces;
   for (auto &piece : pieces) {
     allPieces[std::to_string(piece->spot.file) +
               std::to_string(piece->spot.rank)] = piece->side;
   }
-  const Rank startingRank = side == WHITE_SIDE ? RANK_1 : RANK_8;
+
   bool isRightCastleValid = !isSpotInCheck({FILE_F, startingRank}, side, true);
   bool isLeftCastleValid = !isSpotInCheck({FILE_D, startingRank}, side, true);
+  if (!isRightCastleValid && !isLeftCastleValid)
+    return {};
 
   // validate the history
   for (auto &record : history.records) {
@@ -172,11 +191,6 @@ std::vector<Spot> GameManager::getValidCastleMoves(Side side) {
                (record.end.rank == startingRank && record.end.file == FILE_H)) {
       isLeftCastleValid = false;
     }
-  }
-
-  // validate if in check
-  if (isSpotInCheck({FILE_E, startingRank}, side, false)) {
-    return {};
   }
 
   // right & left castle ( validate if no piece in the middle )
@@ -231,6 +245,91 @@ void GameManager::runCastleMove(Spot nSpot) {
   }
 }
 
-void GameManager::addToHistory(Spot start, Spot end) {
-  history.records.push_back({start, end});
+void GameManager::addToHistory(Piece *piece, Spot end) {
+  history.records.push_back({piece, piece->spot, end});
+}
+
+bool GameManager::makeMove(Piece *piece, Spot newSpot, bool switchTurn) {
+  // castle
+  if (piece->type == KING && abs(newSpot.file - piece->spot.file) == 2) {
+    runCastleMove(newSpot);
+  }
+  // en-passant
+  else if (piece->type == PAWN &&
+           newSpot.rank == (piece->side == WHITE_SIDE ? RANK_6 : RANK_3) &&
+           piece->spot.file != newSpot.file) {
+    HistoryRecord lastMove = history.records[history.records.size() - 1];
+    if (lastMove.end.rank ==
+            newSpot.rank + (piece->side == WHITE_SIDE ? -1 : 1) &&
+        lastMove.end.file == newSpot.file) {
+      runCapture({newSpot.file,
+                  (Rank)(newSpot.rank + (piece->side == WHITE_SIDE ? -1 : 1))});
+    }
+  }
+
+  addToHistory(piece, newSpot);
+  runCapture(newSpot);
+  piece->move(newSpot);
+
+  Spot kingSpot;
+  for (auto &p : pieces) {
+    if (p->type == KING && p->side == piece->side) {
+      kingSpot = p->spot;
+      break;
+    }
+  }
+  if (!isSpotInCheck(kingSpot, piece->side, true)) {
+    // successfull
+    if (switchTurn) {
+      getNotified({MOVE_MADE, piece->side});
+    }
+    return true;
+  } else {
+    rollbackMove();
+    return false;
+  }
+}
+
+void GameManager::rollbackMove() {
+  if (history.capturedPieces.find(history.records.size()) !=
+      history.capturedPieces.end()) {
+    int placement = history.capturedPiecesIndexes[history.records.size()];
+    pieces.insert(pieces.begin() + placement,
+                  std::move(history.capturedPieces[history.records.size()]));
+    gameEngine->registerGameObjects({pieces[placement].get()});
+    history.capturedPieces.erase(history.records.size());
+    history.capturedPiecesIndexes.erase(history.records.size());
+  }
+  HistoryRecord lastRecord = history.records[history.records.size() - 1];
+  lastRecord.piece->move(lastRecord.start);
+  history.records.erase(history.records.begin() + history.records.size() - 1);
+}
+
+GameStatus GameManager::getGameStatus(Side side) {
+  for (int i = 0; i < (int)pieces.size(); i++) {
+    Piece *piece = pieces[i].get();
+    if (piece->side != side) {
+      continue;
+    }
+    std::vector<Spot> pieceValidMoves = piece->getValidMoves();
+    for (auto &validMove : pieceValidMoves) {
+      if (makeMove(piece, validMove, false)) {
+        rollbackMove();
+        return RUNNING;
+      }
+    }
+  }
+
+  Spot kingSpot;
+  for (auto &p : pieces) {
+    if (p->type == KING && p->side == side) {
+      kingSpot = p->spot;
+      break;
+    }
+  }
+  if (isSpotInCheck(kingSpot, side, true)) {
+    return CHECKMATE;
+  } else {
+    return DRAW;
+  }
 }

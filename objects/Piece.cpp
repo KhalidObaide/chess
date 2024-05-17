@@ -71,7 +71,7 @@ void Piece::onMouseDown() {
 }
 
 void Piece::onMouseUp() {
-  if (isDragging) {
+  if (isDragging && gameManager.gameTurn == side) {
     isDragging = false;
     zIndex = 0; // revert to original zIndex
     SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
@@ -80,6 +80,7 @@ void Piece::onMouseUp() {
     int snappedX = round((position.x + (size.x / 2)) / CS);
     int snappedY = 7 - round((position.y + (size.y / 2)) / CS);
     Spot newSpot = {(File)(snappedX), (Rank)(snappedY)};
+
     // find valid moves and revert to original spot if invalid move is chosen
     bool isValidMove = false;
     auto allValidMoves = getValidMoves();
@@ -90,30 +91,7 @@ void Piece::onMouseUp() {
       }
     }
     if (isValidMove) {
-      // handle capture
-      // check if it was a castle move ( edge-case )
-      if (type == KING && abs(newSpot.file - spot.file) == 2) {
-        gameManager.runCastleMove(newSpot);
-      }
-      // en-passant ( edge-case )
-      else if (type == PAWN &&
-               newSpot.rank == (side == WHITE_SIDE ? RANK_6 : RANK_3) &&
-               spot.file != newSpot.file) {
-        // we moved in diagnal in the RANK_6 and RANK_3 ( potential en passant)
-        HistoryRecord lastMove =
-            gameManager.history.records[gameManager.history.records.size() - 1];
-        if (lastMove.end.rank == newSpot.rank + (side == WHITE_SIDE ? -1 : 1) &&
-            lastMove.end.file == newSpot.file) {
-          gameManager.runCapture(
-              {newSpot.file,
-               (Rank)(newSpot.rank + (side == WHITE_SIDE ? -1 : 1))});
-        }
-      }
-
-      gameManager.runCapture(newSpot);
-      gameManager.addToHistory(spot, newSpot);
-      move(newSpot);
-      gameManager.getNotified({MOVE_MADE, side});
+      gameManager.makeMove(this, newSpot, true);
     } else {
       move(spot); // reset
     }

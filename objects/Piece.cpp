@@ -61,7 +61,8 @@ void Piece::update(std::unordered_map<InputEventType, int> &events) {
 }
 
 void Piece::onMouseDown() {
-  if (isReadyToDrag && !isDragging && gameTurn == side) {
+  if (isReadyToDrag && !isDragging && gameTurn == side &&
+      gameManager.promotionInProgress == false) {
     isDragging = true;
     zIndex = 10; // dragging piece always on top
 

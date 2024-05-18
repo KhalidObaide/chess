@@ -6,6 +6,8 @@
 #include <vector>
 
 class Piece;
+class GameObject;
+class PromotionOption;
 
 // types
 enum File { FILE_A, FILE_B, FILE_C, FILE_D, FILE_E, FILE_F, FILE_G, FILE_H };
@@ -68,6 +70,13 @@ typedef struct {
   std::unordered_map<int, std::unique_ptr<Piece>> capturedPieces;
   std::unordered_map<int, int> capturedPiecesIndexes;
 } History;
+
+typedef struct {
+  Side side;
+  Spot spot;
+  bool hidden;
+  std::vector<PromotionOption> options;
+} PromotionBoard;
 
 enum GameStatus { DRAW, CHECKMATE, RUNNING };
 
@@ -152,11 +161,13 @@ public:
 
 class GameManager : public GameObject {
 private:
-  GameEngine *gameEngine;
   Board board;
   const int CS; // CELL_SIZE
+  PromotionBoard promotionBoard;
 
 public:
+  GameEngine *gameEngine;
+  bool promotionInProgress;
   Side gameTurn;
   History history;
   std::vector<std::unique_ptr<Piece>> pieces;
@@ -174,6 +185,9 @@ public:
   bool makeMove(Piece *piece, Spot newSpot, bool switchTurn = true);
   void rollbackMove();
   GameStatus getGameStatus(Side side);
+  void runPromotion(Side side, Spot spot);
+  void displayPromotionBoard(Side side, Spot spot);
+  void confirmPromotion(PieceType type, Side side, Spot spot);
 };
 
 class Pawn : public Piece {
@@ -216,4 +230,18 @@ public:
   Queen(Side nSide, std::string initialPosition, const int nCS,
         SDL_Renderer *renderer, GameManager &nGameManager);
   std::vector<Spot> getValidMoves(bool checkForCapture = false) override;
+};
+
+class PromotionOption : public GameObject {
+private:
+  const int CS;
+  GameManager *gameManager;
+  Side side;
+  Spot spot;
+  PieceType type;
+
+public:
+  PromotionOption(PieceType nType, const int CS, GameManager *gameManager);
+  void display(Side side, Spot spot);
+  void onMouseDown() override;
 };

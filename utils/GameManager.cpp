@@ -16,9 +16,11 @@ std::unordered_map<std::string, BoardTheme> THEMES_SET = {
 };
 
 GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
-    : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), gameEngine(nGameEngine),
-      board(nGameEngine, CELL_SIZE, THEMES_SET["Sandcastle"]), CS(CELL_SIZE) {
+    : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false),
+      board(nGameEngine, CELL_SIZE, THEMES_SET["Emerald"]), CS(CELL_SIZE) {
 
+  promotionInProgress = false;
+  gameEngine = nGameEngine;
   gameEngine->registerGameObjects({this});
 
   setBoard({
@@ -281,7 +283,14 @@ bool GameManager::makeMove(Piece *piece, Spot newSpot, bool switchTurn) {
   if (!isSpotInCheck(kingSpot, piece->side, true)) {
     // successfull
     if (switchTurn) {
-      getNotified({MOVE_MADE, piece->side});
+      // promotion ( last-rank )
+      Rank promotionRank = piece->side == WHITE_SIDE ? RANK_8 : RANK_1;
+      if (piece->type == PAWN && newSpot.rank == promotionRank) {
+        runPromotion(piece->side, newSpot); // getNotified will be called after
+                                            // selecting the new piece
+      } else {
+        getNotified({MOVE_MADE, piece->side});
+      }
     }
     return true;
   } else {
@@ -332,4 +341,61 @@ GameStatus GameManager::getGameStatus(Side side) {
   } else {
     return DRAW;
   }
+}
+
+void GameManager::runPromotion(Side side, Spot spot) {
+  // delete the piece
+  int pawnIndex = 0;
+  for (auto &piece : pieces) {
+    if (piece->spot.file == spot.file && piece->spot.rank == spot.rank) {
+      break;
+    }
+    pawnIndex++;
+  }
+
+  gameEngine->deRegisterGameObject(pieces[pawnIndex].get());
+  pieces.erase(pieces.begin() + pawnIndex);
+  displayPromotionBoard(side, spot);
+}
+
+void GameManager::displayPromotionBoard(Side side, Spot spot) {
+  promotionInProgress = true;
+  promotionBoard.options.push_back(PromotionOption(QUEEN, CS, this));
+  promotionBoard.options.push_back(PromotionOption(ROOK, CS, this));
+  promotionBoard.options.push_back(PromotionOption(BISHOP, CS, this));
+  promotionBoard.options.push_back(PromotionOption(KNIGHT, CS, this));
+  for (auto &option : promotionBoard.options) {
+    option.display(side, spot);
+    gameEngine->registerGameObjects({&option});
+  }
+}
+
+void GameManager::confirmPromotion(PieceType type, Side side, Spot spot) {
+  switch (type) {
+  case KNIGHT:
+    pieces.push_back(std::make_unique<Knight>(
+        Knight(side, "a1", CS, gameEngine->renderer, *this)));
+    break;
+  case BISHOP:
+    pieces.push_back(std::make_unique<Bishop>(
+        Bishop(side, "a1", CS, gameEngine->renderer, *this)));
+    break;
+  case ROOK:
+    pieces.push_back(std::make_unique<Rook>(
+        Rook(side, "a1", CS, gameEngine->renderer, *this)));
+    break;
+  default:
+    pieces.push_back(std::make_unique<Queen>(
+        Queen(side, "a1", CS, gameEngine->renderer, *this)));
+    break;
+  }
+  pieces[pieces.size() - 1]->move(spot);
+  gameEngine->registerGameObjects({pieces[pieces.size() - 1].get()});
+  getNotified({MOVE_MADE, side});
+
+  for (auto &option : promotionBoard.options) {
+    gameEngine->deRegisterGameObject(&option);
+  }
+  promotionBoard = {};
+  promotionInProgress = false;
 }

@@ -22,7 +22,11 @@ GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
   promotionInProgress = false;
   gameEngine = nGameEngine;
   gameEngine->registerGameObjects({this});
+  setStandardBoard();
+  setGameTurn(WHITE_SIDE);
+}
 
+void GameManager::setStandardBoard() {
   setBoard({
       {WHITE_SIDE, PAWN, "a2"},   {WHITE_SIDE, PAWN, "b2"},
       {WHITE_SIDE, PAWN, "c2"},   {WHITE_SIDE, PAWN, "d2"},
@@ -42,7 +46,27 @@ GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
       {BLACK_SIDE, BISHOP, "c8"}, {BLACK_SIDE, BISHOP, "f8"},
       {BLACK_SIDE, QUEEN, "d8"},  {BLACK_SIDE, KING, "e8"},
   });
+}
 
+void GameManager::reset() {
+  // promotionBoard
+  for (auto &option : promotionBoard.options) {
+    gameEngine->deRegisterGameObject(&option);
+  }
+  promotionBoard = {};
+  promotionInProgress = false;
+
+  // remove all pieces
+  for (auto &piece : pieces) {
+    gameEngine->deRegisterGameObject(piece.get());
+  }
+  while (pieces.size()) {
+    pieces.erase(pieces.begin());
+  }
+  history.records = {};
+  history.capturedPieces.clear();
+  history.capturedPiecesIndexes = {};
+  setStandardBoard();
   setGameTurn(WHITE_SIDE);
 }
 

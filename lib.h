@@ -188,6 +188,8 @@ public:
   void runPromotion(Side side, Spot spot);
   void displayPromotionBoard(Side side, Spot spot);
   void confirmPromotion(PieceType type, Side side, Spot spot);
+  void reset();
+  void setStandardBoard();
 };
 
 class Pawn : public Piece {
@@ -243,5 +245,22 @@ private:
 public:
   PromotionOption(PieceType nType, const int CS, GameManager *gameManager);
   void display(Side side, Spot spot);
+  void onMouseDown() override;
+};
+
+class Button : public GameObject {
+public:
+  std::string text;
+  RGBA color;
+  Button(std::string nText, Coordinate nPosition, Coordinate nSize,
+         std::string texturePath, SDL_Renderer *renderer);
+};
+
+class RestartButton : public Button {
+private:
+  GameManager *gameManager;
+
+public:
+  RestartButton(const int CS, GameManager *nGameManager);
   void onMouseDown() override;
 };

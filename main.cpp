@@ -17,8 +17,11 @@ int main() {
   GameManager gameManager = GameManager(&gameEngine, CELL_SIZE, THEMES_SET[6]);
   RestartButton restart = RestartButton(CELL_SIZE, &gameManager);
   FlipButton flip = FlipButton(CELL_SIZE, &gameManager);
+  GameStatusIndicator statusIndicator =
+      GameStatusIndicator(CELL_SIZE, gameManager);
   ThemePicker themePicker = ThemePicker(CELL_SIZE, gameManager, THEMES_SET);
-  gameEngine.registerGameObjects({&restart, &flip, &themePicker});
+  gameEngine.registerGameObjects(
+      {&restart, &flip, &statusIndicator, &themePicker});
   gameEngine.gameLoop();
   return 0;
 }

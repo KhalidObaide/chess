@@ -8,6 +8,7 @@ ThemePicker::ThemePicker(const int nCS, GameManager &nGameManager,
     : GameObject({(nCS * 8) - WIDTH - PADDING, nCS * 8 + PADDING}, {0, 0},
                  {0, 0, 0, 0}, false),
       gameManager(nGameManager) {
+  isVisible = false;
   int buttonsWidth = (WIDTH / nThemes.size()) - (PADDING / 2);
   int index = 0;
   for (auto &theme : nThemes) {

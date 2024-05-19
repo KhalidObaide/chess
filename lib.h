@@ -91,6 +91,7 @@ public:
   RGBA fill;
   SDL_Texture *texture;
   bool isUsingTexture;
+  bool isVisible;
   int zIndex;
 
   GameObject(Coordinate nPosition, Coordinate nSize, RGBA nFill,
@@ -160,6 +161,8 @@ public:
   virtual std::vector<Spot> getValidMoves(bool checkForCapture = false);
 };
 
+class GameStatusIndicator;
+
 class GameManager : public GameObject {
 private:
   const int CS; // CELL_SIZE
@@ -168,6 +171,7 @@ private:
 public:
   GameEngine *gameEngine;
   Board board;
+  GameStatus status;
   bool promotionInProgress;
   bool flipBoard;
   Side gameTurn;
@@ -295,4 +299,15 @@ public:
   GameManager &gameManager;
   ThemePicker(const int nCS, GameManager &nGameManager,
               std::vector<BoardTheme> nBoardThemes);
+};
+
+class GameStatusIndicator : public GameObject {
+private:
+  GameManager &gameManager;
+  GameStatus status;
+
+public:
+  GameStatusIndicator(const int nCS, GameManager &gameManager);
+  void onStatusChange(GameStatus nStatus);
+  void update(std::unordered_map<InputEventType, int> & /*events*/) override;
 };

@@ -37,7 +37,7 @@ void GameEngine::deRegisterGameObject(GameObject *gameObjectToRemove) {
 
 void GameEngine::runFrame() {
   // Set background color
-  SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
+  SDL_SetRenderDrawColor(renderer, 175, 175, 175, 255);
   SDL_RenderClear(renderer);
 
   // Sort game objects based on zIndex
@@ -49,6 +49,9 @@ void GameEngine::runFrame() {
   for (GameObject *gameObject : gameObjects) {
     // Update game object
     gameObject->update(events);
+    if (!gameObject->isVisible) {
+      continue;
+    }
 
     // Render game object
     SDL_Rect rpr = {gameObject->position.x, gameObject->position.y,

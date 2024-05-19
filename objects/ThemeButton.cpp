@@ -7,7 +7,7 @@ ThemeButton::ThemeButton(Coordinate nPosition, Coordinate nSize,
       themePicker(nThemePicker) {
   theme = nTheme;
   isUsingTexture = false;
-  fill = theme.lightFill;
+  fill = theme.darkFill;
 }
 
 void ThemeButton::onMouseDown() {

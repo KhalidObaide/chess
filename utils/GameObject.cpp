@@ -6,6 +6,7 @@ GameObject::GameObject(Coordinate nPosition, Coordinate nSize, RGBA nFill,
   position = nPosition;
   size = nSize;
   fill = nFill;
+  isVisible = true;
   isUsingTexture = nIsUsingTexture;
   zIndex = 0;
 }

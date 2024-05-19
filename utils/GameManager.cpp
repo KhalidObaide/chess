@@ -1,5 +1,4 @@
 #include "../lib.h"
-#include <iostream>
 #include <memory>
 #include <tuple>
 #include <unordered_map>
@@ -9,6 +8,7 @@ GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE,
                          BoardTheme theme)
     : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), CS(CELL_SIZE),
       board(nGameEngine, CELL_SIZE, theme) {
+  isVisible = false;
   flipBoard = false;
   promotionInProgress = false;
   gameEngine = nGameEngine;
@@ -59,6 +59,7 @@ void GameManager::reset() {
   history.capturedPiecesIndexes = {};
   setStandardBoard();
   setGameTurn(WHITE_SIDE);
+  status = RUNNING;
 }
 
 void GameManager::setGameTurn(Side nSide) {
@@ -126,13 +127,7 @@ void GameManager::getNotified(Event event) {
   case MOVE_MADE: {
     setGameTurn((Side)event.value == WHITE_SIDE ? BLACK_SIDE : WHITE_SIDE);
     // validate check-mate
-    GameStatus status = getGameStatus(gameTurn);
-    if (status == CHECKMATE) {
-      std::cout << "CHECKMATE " << (gameTurn == WHITE_SIDE ? "WHITE" : "BLACK")
-                << std::endl;
-    } else if (status == DRAW) {
-      std::cout << "DRAW" << std::endl;
-    }
+    status = getGameStatus(gameTurn);
     break;
   }
   default:

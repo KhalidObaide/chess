@@ -20,3 +20,12 @@ Board::Board(GameEngine *gameEngine, const int CELL_SIZE, BoardTheme nTheme)
     }
   }
 }
+
+void Board::setTheme(BoardTheme theme) {
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      RGBA color = (i + j) % 2 ? theme.darkFill : theme.lightFill;
+      cells[i][j].fill = color;
+    }
+  }
+}

@@ -5,19 +5,10 @@
 #include <unordered_map>
 #include <vector>
 
-std::unordered_map<std::string, BoardTheme> THEMES_SET = {
-    {"Classic", {{255, 255, 255, 255}, {0, 0, 0, 255}}},
-    {"Coral", {{177, 228, 185, 255}, {112, 162, 163, 255}}},
-    {"Dusk", {{204, 183, 174, 255}, {112, 102, 119, 255}}},
-    {"Marine", {{157, 172, 255, 255}, {111, 115, 210, 255}}},
-    {"Wheat", {{234, 240, 206, 255}, {187, 190, 100, 255}}},
-    {"Emerald", {{173, 189, 143, 255}, {111, 143, 114, 255}}},
-    {"Sandcastle", {{227, 193, 111, 255}, {184, 139, 74, 255}}},
-};
-
-GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
-    : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false),
-      board(nGameEngine, CELL_SIZE, THEMES_SET["Emerald"]), CS(CELL_SIZE) {
+GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE,
+                         BoardTheme theme)
+    : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false), CS(CELL_SIZE),
+      board(nGameEngine, CELL_SIZE, theme) {
   flipBoard = false;
   promotionInProgress = false;
   gameEngine = nGameEngine;

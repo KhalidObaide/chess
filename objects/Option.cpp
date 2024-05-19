@@ -1,5 +1,4 @@
 #include "../lib.h"
-#include <iostream>
 #include <sstream>
 
 PromotionOption::PromotionOption(PieceType nType, const int nCS,

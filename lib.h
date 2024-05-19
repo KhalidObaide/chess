@@ -128,6 +128,7 @@ private:
 
 public:
   Board(GameEngine *gameEngine, const int CELL_SIZE, BoardTheme nTheme);
+  void setTheme(BoardTheme theme);
 };
 
 class GameManager;
@@ -161,18 +162,18 @@ public:
 
 class GameManager : public GameObject {
 private:
-  Board board;
   const int CS; // CELL_SIZE
   PromotionBoard promotionBoard;
 
 public:
   GameEngine *gameEngine;
+  Board board;
   bool promotionInProgress;
   bool flipBoard;
   Side gameTurn;
   History history;
   std::vector<std::unique_ptr<Piece>> pieces;
-  GameManager(GameEngine *nGameEngine, const int CELL_SIZE);
+  GameManager(GameEngine *nGameEngine, const int CELL_SIZE, BoardTheme theme);
   void setGameTurn(Side nSide);
   void setBoard(
       std::vector<std::tuple<Side, PieceType, std::string>> piecePlacements);
@@ -192,6 +193,7 @@ public:
   void setStandardBoard();
   void reset();
   void flip();
+  void setTheme(BoardTheme theme);
 };
 
 class Pawn : public Piece {
@@ -274,4 +276,23 @@ private:
 public:
   FlipButton(const int CS, GameManager *nGameManager);
   void onMouseDown() override;
+};
+
+class ThemePicker;
+
+class ThemeButton : public Button {
+public:
+  BoardTheme theme;
+  ThemePicker &themePicker;
+  ThemeButton(Coordinate position, Coordinate size, ThemePicker &nThemePicker,
+              BoardTheme nTheme);
+  void onMouseDown() override;
+};
+
+class ThemePicker : public GameObject {
+public:
+  std::vector<std::unique_ptr<ThemeButton>> themeButtons;
+  GameManager &gameManager;
+  ThemePicker(const int nCS, GameManager &nGameManager,
+              std::vector<BoardTheme> nBoardThemes);
 };

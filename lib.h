@@ -168,6 +168,7 @@ private:
 public:
   GameEngine *gameEngine;
   bool promotionInProgress;
+  bool flipBoard;
   Side gameTurn;
   History history;
   std::vector<std::unique_ptr<Piece>> pieces;
@@ -188,8 +189,9 @@ public:
   void runPromotion(Side side, Spot spot);
   void displayPromotionBoard(Side side, Spot spot);
   void confirmPromotion(PieceType type, Side side, Spot spot);
-  void reset();
   void setStandardBoard();
+  void reset();
+  void flip();
 };
 
 class Pawn : public Piece {
@@ -262,5 +264,14 @@ private:
 
 public:
   RestartButton(const int CS, GameManager *nGameManager);
+  void onMouseDown() override;
+};
+
+class FlipButton : public Button {
+private:
+  GameManager *gameManager;
+
+public:
+  FlipButton(const int CS, GameManager *nGameManager);
   void onMouseDown() override;
 };

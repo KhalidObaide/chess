@@ -47,8 +47,14 @@ Spot Piece::convertToSpot(std::string spotString) {
 void Piece::move(Spot nSpot) {
   spot = nSpot;
 
-  position.x = (spot.file * CS);
-  position.y = (CS * 8) - ((spot.rank + 1) * CS);
+  if (gameManager.flipBoard) {
+    position.x = (7 - spot.file) * CS;
+    position.y = spot.rank * CS;
+  } else {
+    position.x = (spot.file * CS);
+    position.y = (CS * 8) - ((spot.rank + 1) * CS);
+  }
+  // center pivot
   position.x += (CS - size.x) / 2;
   position.y += (CS - size.y) / 2;
 }
@@ -78,8 +84,14 @@ void Piece::onMouseUp() {
     SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
 
     // Snap to grid
-    int snappedX = round((position.x + (size.x / 2)) / CS);
-    int snappedY = 7 - round((position.y + (size.y / 2)) / CS);
+    int snappedX, snappedY;
+    if (gameManager.flipBoard) {
+      snappedX = 7 - round((position.x + (size.x / 2)) / CS);
+      snappedY = round((position.y + (size.y / 2)) / CS);
+    } else {
+      snappedX = round((position.x + (size.x / 2)) / CS);
+      snappedY = 7 - round((position.y + (size.y / 2)) / CS);
+    }
     Spot newSpot = {(File)(snappedX), (Rank)(snappedY)};
 
     // find valid moves and revert to original spot if invalid move is chosen

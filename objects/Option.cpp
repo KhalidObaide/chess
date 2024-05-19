@@ -14,8 +14,14 @@ void PromotionOption::display(Side nSide, Spot nSpot) {
   spot = nSpot;
 
   // set the position
-  position.x = spot.file * CS;
-  position.y = (7 - spot.rank) * CS;
+  if (gameManager->flipBoard) {
+    position.x = (7 - spot.file) * CS;
+    position.y = spot.rank * CS;
+  } else {
+    position.x = spot.file * CS;
+    position.y = (7 - spot.rank) * CS;
+  }
+
   if (type == BISHOP || type == KNIGHT) {
     position.y += CS / 2;
   }

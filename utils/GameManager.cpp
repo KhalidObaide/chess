@@ -18,7 +18,7 @@ std::unordered_map<std::string, BoardTheme> THEMES_SET = {
 GameManager::GameManager(GameEngine *nGameEngine, const int CELL_SIZE)
     : GameObject({0, 0}, {0, 0}, {0, 0, 0, 0}, false),
       board(nGameEngine, CELL_SIZE, THEMES_SET["Emerald"]), CS(CELL_SIZE) {
-
+  flipBoard = false;
   promotionInProgress = false;
   gameEngine = nGameEngine;
   gameEngine->registerGameObjects({this});
@@ -422,4 +422,11 @@ void GameManager::confirmPromotion(PieceType type, Side side, Spot spot) {
   }
   promotionBoard = {};
   promotionInProgress = false;
+}
+
+void GameManager::flip() {
+  flipBoard = !flipBoard;
+  for (auto &piece : pieces) {
+    piece->move(piece->spot); // refresh the position
+  }
 }

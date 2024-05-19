@@ -6,7 +6,8 @@ int main() {
       GameEngine("Chess", {CELL_SIZE * 8, (CELL_SIZE * 8) + 50});
   GameManager gameManager = GameManager(&gameEngine, CELL_SIZE);
   RestartButton restart = RestartButton(CELL_SIZE, &gameManager);
-  gameEngine.registerGameObjects({&restart});
+  FlipButton flip = FlipButton(CELL_SIZE, &gameManager);
+  gameEngine.registerGameObjects({&restart, &flip});
   gameEngine.gameLoop();
   return 0;
 }
